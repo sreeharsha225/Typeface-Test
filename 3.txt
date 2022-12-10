@@ -1,0 +1,31 @@
+To desing a datastore to save monitoring data of a service, 
+
+We will hear the requests and responses at the server. Here we modify the request and response of the system. In this design, When user request an API, he also sends the timestamp of the time, when he is making the request in the request, so that at the server side, we can store the timestamp of the request, and also when we have to know the response time, In this design, user will send the acknowledgement request to the same API with the data he recieved and the timestamp of the ack request. Now the response time becomes the difference between the timestamps of the request and the ack request.
+
+schema of the table(MONITORDATA):
+
+API_ID: which is the concatenation of the API Name and the CRUD operation
+USER_ID: ID of the user requested
+data_sent: the output of the request
+data_ack: the data that the user recieved and send to data to the server with the ack request
+req_t: timestamp of the user request
+res_t: timestamp of the user's ack request
+
+Get the API with maximum average response time across the users:
+QUERY: 
+```
+SELECT t1.API_ID
+FROM (SELECT API_ID, AVG(res_t - req_t) as AVGTIME GROUPBY API_ID) as t1
+HAVING t1.AVGTIME =  MAX(t1.AVGTIME) 
+```
+
+ Get the API with maximum average response time for each user.
+ QUERY:
+ ```
+ SELECT t1.API_ID
+FROM (SELECT API_ID,USER_ID, AVG(res_t - req_t) as AVGTIME GROUPBY USER_ID) as t1
+HAVING t1.AVGTIME =  MAX(t1.AVGTIME)
+ ```
+
+ Get error percentage of each API in buckets of 1 hours for 24 hours.
+ QUERY:
